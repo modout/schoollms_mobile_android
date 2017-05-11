@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">SchoolLMS</string>
+    <string-array name="array_roles">
+        <item>Learner</item>
+        <item>Support</item>
+        <item>Teacher</item>
+    </string-array>
+    <string-array name="array_schools">
+        <item>School A</item>
+        <item>School B</item>
+        <item>School C</item>
+    </string-array>
+</resources>
