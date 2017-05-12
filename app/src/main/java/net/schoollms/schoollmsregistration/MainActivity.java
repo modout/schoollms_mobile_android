@@ -43,7 +43,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Button btnNo = (Button) findViewById(R.id.btn_no);
         final LinearLayout linearLayout = (LinearLayout) findViewById(R.id.layout_confirm_details);
         final Button btnDone = (Button) findViewById(R.id.btn_done);
-        final Button btnUpload = (Button) findViewById(R.id.btn_upload);
 
         btnDone.setVisibility(View.VISIBLE);
 
@@ -73,10 +72,44 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         });
 
+        //Permission Listener
+        PermissionListener permissionlistener = new PermissionListener() {
+            @Override
+            public void onPermissionGranted() {
+                Toast.makeText(MainActivity.this, "Permission Granted",
+                        Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onPermissionDenied(ArrayList<String> deniedPermissions) {
+                Toast.makeText(MainActivity.this, "Permission Denied\n" + deniedPermissions.toString(),
+                        Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        new TedPermission(this)
+                .setPermissionListener(permissionlistener)
+                .setDeniedMessage("If you reject permission,you can not use this service\n\nPlease turn on permissions at [Setting] > [Permission]")
+                .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .check();
+
+        final TedBottomPicker tedBottomPicker = new TedBottomPicker.Builder(MainActivity.this)
+                .setOnImageSelectedListener(new TedBottomPicker.OnImageSelectedListener() {
+                    @Override
+                    public void onImageSelected(Uri uri) {
+                        Log.d(TAG, "onImageSelected: " + uri.getPath());
+                    }
+                })
+                .create();
+
+
+
+
         btnYes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, WebViewActivity.class);
+                tedBottomPicker.show(getSupportFragmentManager());
                 startActivity(intent);
             }
         });

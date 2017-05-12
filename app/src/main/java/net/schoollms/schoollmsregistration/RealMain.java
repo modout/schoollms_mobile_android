@@ -25,7 +25,7 @@ import java.util.List;
 public class RealMain extends AppCompatActivity {
 
     private static final String TAG = "RealMain" ;
-    final static String GNU_PACKAGE = "com.gnuroot.debian";
+    public final static String GNU_PACKAGE = "com.gnuroot.debian";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +34,7 @@ public class RealMain extends AppCompatActivity {
         AssetManager assetManager = getAssets();
 
         Intent intent = new Intent(this, WebViewActivity.class);
+        //return;
         File f = new File("data");
 
         Log.d(TAG, "onCreate: lifexx" +   getApplicationInfo().dataDir);
@@ -115,6 +116,14 @@ public class RealMain extends AppCompatActivity {
                 Log.d(TAG, "onCreate: patho " + uri.getPath());
                 in.setDataAndType(uri, "application/vnd.android.package-archive").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
+
+                //This is when we run the commands
+//                Intent fmIntent = getPackageManager().getLaunchIntentForPackage(GNU_PACKAGE);
+//               // fmIntent.setAction("com.gnuroot.debian.LAUNCH");
+//                fmIntent.setAction("com.gnuroot.debian.RUN_SCRIPT_STR");
+//                fmIntent.putExtra("launchType", "launchTerm"); //
+//                fmIntent.putExtra("command", "ls");
+              //  fmIntent.putExtra("RUN_SCRIPT_STR", "ls");
                 this.startActivity(in);
 
                 //startGNUApk();
@@ -138,9 +147,9 @@ public class RealMain extends AppCompatActivity {
     private  void startGNUApk() {
         Intent fmIntent = getPackageManager().getLaunchIntentForPackage(GNU_PACKAGE);
         fmIntent.setAction("com.gnuroot.debian.LAUNCH");
-//                fmIntent.setData(null);
         fmIntent.putExtra("launchType", "launchTerm"); //
-        fmIntent.putExtra("command", "ls");
+        fmIntent.putExtra("command", "#!/bin/bash\n" +
+                "ls");
         startActivityForResult(fmIntent, 600);
     }
 
@@ -178,4 +187,6 @@ public class RealMain extends AppCompatActivity {
             }
         }
     }
+
+
 }

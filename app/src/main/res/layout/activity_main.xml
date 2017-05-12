@@ -140,10 +140,6 @@
             <LinearLayout android:layout_width="match_parent"
                           android:orientation="horizontal"
                           android:layout_height="wrap_content">
-                <Button android:layout_width="wrap_content"
-                        android:text="Start installer"
-                        android:id="@+id/btn_upload"
-                        android:layout_height="wrap_content"/>
                 <Button
                         android:text="Yes,its me "
                         android:layout_width="wrap_content"
