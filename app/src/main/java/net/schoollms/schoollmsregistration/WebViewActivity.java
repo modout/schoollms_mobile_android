@@ -22,9 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.webkit.*;
-import android.widget.PopupMenu;
-import android.widget.ProgressBar;
-import android.widget.Toast;
+import android.widget.*;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
 import gun0912.tedbottompicker.TedBottomPicker;
@@ -56,6 +54,13 @@ public class WebViewActivity extends AppCompatActivity implements PopupMenu.OnMe
         Intent intent = getIntent();
         pref = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
 
+        Button btn = (Button) findViewById(R.id.button_menu);
+        btn.setVisibility(View.GONE);
+
+        if((pref.getString("url", "http://timetable.schoollms.net/").equals("http://timetable.schoollms.net/"))) {
+            btn.setVisibility(View.VISIBLE);
+            showPopup(btn);
+        }
 
         final Timer t = new Timer();
         t.schedule(new TimerTask() {
@@ -68,11 +73,6 @@ public class WebViewActivity extends AppCompatActivity implements PopupMenu.OnMe
                 }
             }
         }, 60);
-
-
-
-
-
 //        String androidId = Settings.Secure.getString(this.getContentResolver(),
 //                Settings.Secure.ANDROID_ID);
         final String url[] = {"http://timetable.schoollms.net/"};

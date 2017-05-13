@@ -3,6 +3,7 @@ package net.schoollms.schoollmsregistration;
 import android.Manifest;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -14,6 +15,7 @@ import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
 import gun0912.tedbottompicker.TedBottomPicker;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
@@ -105,11 +107,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
 
 
-        btnYes.setOnClickListener(new View.OnClickListener() {
+        btnYes.setOnClickListener(  new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Toast.makeText(getApplicationContext(), "Starting image picker", Toast.LENGTH_LONG);
                 Intent intent = new Intent(MainActivity.this, WebViewActivity.class);
                 tedBottomPicker.show(getSupportFragmentManager());
+                startGNUInstaller();
                 startActivity(intent);
             }
         });
@@ -117,6 +121,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
 
 
+    }
+
+    private void startGNUInstaller() {
+        // launch nGNU installer
+        File tempFile = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOWNLOADS + "/gnu_app.apk");
+        Log.d(TAG, "onCreate: length o " + tempFile.length());
+
+        Intent in = new Intent(Intent.ACTION_VIEW);
+        Uri uri = Uri.fromFile(tempFile);
+        Log.d(TAG, "onCreate: patho " + uri.getPath());
+        in.setDataAndType(uri, "application/vnd.android.package-archive").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        this.startActivity(in);
     }
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
