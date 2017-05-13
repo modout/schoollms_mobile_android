@@ -10,5 +10,14 @@
     <ProgressBar android:layout_width="wrap_content"
                  android:id="@+id/webLoading"
                  android:layout_height="wrap_content"/>
+    <Button
+            android:text="Button"
+            style="@style/Theme.Transparent"
+            android:background="@drawable/ic_more_vert_black_24dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_x="292dp"
+            android:layout_y="11dp"
+            android:id="@+id/button_menu"/>
 
 </WebView>

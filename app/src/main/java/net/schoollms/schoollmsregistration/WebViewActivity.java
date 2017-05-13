@@ -18,9 +18,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.webkit.*;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 import com.gun0912.tedpermission.PermissionListener;
@@ -29,10 +31,16 @@ import gun0912.tedbottompicker.TedBottomPicker;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
-public class WebViewActivity extends AppCompatActivity {
+public class WebViewActivity extends AppCompatActivity implements PopupMenu.OnMenuItemClickListener {
     private static final String TAG = "WebViewActivity";
     private static final String PREF_NAME = "BrowserHistory";
+    private SharedPreferences pref;
+
+
+    private    WebView view;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,8 +54,25 @@ public class WebViewActivity extends AppCompatActivity {
         display.getSize(size);
         final ProgressBar bar = (ProgressBar) findViewById(R.id.webLoading);
         Intent intent = getIntent();
-        final SharedPreferences pref = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
-        execCmd();
+        pref = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+
+
+        final Timer t = new Timer();
+        t.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if(execCmd()) {
+                    t.cancel();
+                    Intent in = new Intent(getApplicationContext(), WebViewActivity.class);
+                    startActivity(in);
+                }
+            }
+        }, 60);
+
+
+
+
+
 //        String androidId = Settings.Secure.getString(this.getContentResolver(),
 //                Settings.Secure.ANDROID_ID);
         final String url[] = {"http://timetable.schoollms.net/"};
@@ -60,7 +85,7 @@ public class WebViewActivity extends AppCompatActivity {
                 url[0] = pref.getString("url", "");
         }
         //Setting webview [ohh no!!!]
-        WebView view = (WebView) findViewById(R.id.activity_web_view);
+        view = (WebView) findViewById(R.id.activity_web_view);
         WebSettings viewSettings = view.getSettings();
         viewSettings.setJavaScriptEnabled(true);
 
@@ -120,5 +145,23 @@ public class WebViewActivity extends AppCompatActivity {
         if (s.contains("auto")) {
             return true ;
         } else return false;
+    }
+
+    private void showPopup(View view) {
+        PopupMenu popupMenu = new PopupMenu(this, view);
+        popupMenu.setOnMenuItemClickListener(this);
+        popupMenu.inflate(R.menu.action);
+        popupMenu.show();
+    }
+
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_timetable:
+                pref.edit().putString("url", "http://timetable.schoollms.net/").commit();
+                view.loadUrl(pref.getString("url", "http://timetable.schoollms.net/"));
+                break;
+        }
+        return false;
     }
 }
