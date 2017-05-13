@@ -19,7 +19,24 @@ else
   #DISTRO=${DISTRO[@]:-1}
    DISTRO=${INFO[0]##*=}
 fi
+DISTRO=$(echo $DISTRO | cut -c 2-)
 echo "You are using $DISTRO Linux Distro"
+echo "Updating your distro"
+case "${DISTRO^^}" in
+        DEBIAN)
+#             tar zcvf etc.backup.tar.gz /etc/
+#             x="$(dpkg --list | grep php | awk '/^ii/{ print $2}')"
+#             apt-get --purge remove $x
+#             echo "deb http://packages.dotdeb.org jessie all" >> /etc/apt/sources.list
+#             echo "deb-src http://packages.dotdeb.org jessie all" >> /etc/apt/sources.list
+#             cd /tmp
+#             wget https://www.dotdeb.org/dotdeb.gpg
+#             apt-key add dotdeb.gpg
+#             rm dotdeb.gpg
+             apt update && apt upgrade -y
+                ;;
+esac
+#exit;
 #exit 1
 #Check pre-requisites
 #PHP
@@ -41,12 +58,13 @@ case "${DISTRO^^}" in
             ;;
 
 	DEBIAN)
+
 	    APACHE_INST=( $(dpkg -l apache2) )
 	    count=${#APACHEL_INST[@]}
 	    #echo "COUNT $count"
 	    if [ "${count}" -eq 0 ]; then
 	      echo "Installing Apache.."
-	      sudo apt-get install -y apache2 libapache2-mod-php
+	      apt-get install -y apache2 libapache2-mod-php5
 	    else 
 	      echo "Apache installed"
 	    fi
@@ -119,11 +137,11 @@ case "${DISTRO^^}" in
             ;;
         
 	DEBIAN)
-	    PHP_INST=( $(dpkg -l php) )
+	    PHP_INST=( $(dpkg -l php5) )
 	    
 	    for (( i=0; i<${#PHP_INST[@]}; i++ )); 
 	    do 
-	      PHP_PRE=( 'php-gd' 'php-xml' 'php-mcrypt' 'php-mbstring' 'php-zip' 'php-curl' 'php-fileinfo' 'php-mysql' 'drush' ) 
+	      PHP_PRE=( 'php5-gd' 'php5-xml' 'php5-mcrypt' 'php5-mbstring' 'php5-zip' 'php5-curl' 'php5-fileinfo' 'php5-mysql' 'drush' )
 	      for (( j=0; j<${#PHP_PRE[@]}; j++ ));
 		do 
 		  if [[ "${PHP_INST[i]}" == *"${PHP_PRE[j]}"* ]]; then
@@ -139,7 +157,7 @@ case "${DISTRO^^}" in
 	      echo "PHP is installed"
 	    else   
 	      echo "Installing php"
-	      sudo apt-get install -y php php-gd php-xml php-mcrypt php-mbstring
+	       apt-get install -y php5 php5-gd php5-xml php5-mcrypt php5-mbstring php5-mysql php5-zip php5-curl php5-fileinfo drush
 	    fi
             ;;
  
@@ -220,7 +238,9 @@ case "${DISTRO^^}" in
 	    #echo "COUNT $count"
 	    if [ "${count}" -eq 0 ]; then
 	      echo "Installing MySQL.."
-	      sudo apt-get install -y mysql-server
+	        debconf-set-selections <<< 'mysql-server-5.6 mysql-server/root_password password $0W3t0'
+            debconf-set-selections <<< 'mysql-server-5.6 mysql-server/root_password_again password $0W3t0'
+	        apt-get install -y mysql-server
 	    else 
 	      echo "MySQL installed"
 	    fi
@@ -257,9 +277,11 @@ case "${DISTRO^^}" in
 esac
 
 #PROVIDE database USERNAME AND PASSWORD
-echo "Please provide MySQL username and password for root user";
+#echo "Please provide MySQL username and password for root user";
 #read -p 'Username: ' uservar
-read -sp 'Password: ' passva
+#read -sp 'Password: ' passva
+
+$passva = "$0W3t0"
 
 cat <<EOT > .mysql.cnf
 [client]

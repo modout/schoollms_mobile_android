@@ -1,0 +1,10 @@
+[client]
+password="root"
+
+[mysqldump]
+host=localhost
+password="root"
+
+[client]
+host=localhost
+password="root"
