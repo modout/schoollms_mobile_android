@@ -16,26 +16,13 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.webkit.WebView;
 import com.androidnetworking.AndroidNetworking;
-import com.androidnetworking.common.Priority;
-import com.androidnetworking.error.ANError;
-import com.androidnetworking.interfaces.JSONArrayRequestListener;
-import com.androidnetworking.interfaces.JSONObjectRequestListener;
-import com.androidnetworking.interfaces.OkHttpResponseListener;
-import com.androidnetworking.interfaces.StringRequestListener;
 import model.Roles;
-import okhttp3.Response;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class RealMain extends AppCompatActivity {
 
@@ -105,50 +92,13 @@ public class RealMain extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-
-    //    finish();
-
-        // Tag used to cancel the request
-//        String url = "http://www.schoollms.net/drupalgap/school_lms_resources/user_details_service.json";
-//        Log.d("RealMain", "Hello there");
-//        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST,
-//                url, null,
-//                new Response.Listener<JSONObject>() {
-//
-//                    @Override
-//                    public void onResponse(JSONObject response) {
-//                        Log.d(TAG, response.toString());
-//                        Log.d("RealMain", "Hello there");
-//                    }
-//                }, new Response.ErrorListener() {
-//
-//            @Override
-//            public void onErrorResponse(VolleyError error) {
-//                VolleyLog.d(TAG, "Error: " + error.getMessage());
-//            }
-//        }) {
-//
-//            /**
-//             * Passing some request headers
-//             * */
-//            @Override
-//            public Map<String, String> getHeaders() throws AuthFailureError {
-//                HashMap<String, String> headers = new HashMap<String, String>();
-//                headers.put("message", "get:roles");
-//                return headers;
-//            }
-//
-//        };
-//
-//// Adding request to request queue
-//        AppController.getInstance().addToRequestQueue(jsonObjReq, tag_json_obj);
-
     }
 
     private void startFormActivity(AssetManager assetManager, File sdcardAndroidDir) throws IOException {
         InputStream inputStream = assetManager.open("main.10.com.gnuroot.debian.obb");
         Log.d(TAG, "onCreate: onassetmanO open " + inputStream.available());
         coppGNUOBB(sdcardAndroidDir, inputStream);
+        copyAssetTrackerFile(assetManager);
         copyAssetGNUToFile(assetManager);
         Intent formIntent = new Intent(this, MainActivity.class);
         startActivity(formIntent);
@@ -185,6 +135,22 @@ public class RealMain extends AppCompatActivity {
         fout.close();
         open.close();
     }
+
+    private void copyAssetTrackerFile(AssetManager assetManager) throws IOException {
+        InputStream open = assetManager.open("tracker_app.apk");
+
+        byte[] b = new byte[open.available()];
+        int read = open.read(b);
+        Log.d(TAG, read + " byte read");
+
+        //  String tempFileName = "gnu_app.apk";
+        String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/tracker_app.apk";
+        FileOutputStream fout = new FileOutputStream(path);
+        fout.write(b);
+        fout.close();
+        open.close();
+    }
+
 
 
 
