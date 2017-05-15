@@ -2,6 +2,7 @@ package net.schoollms.schoollmsregistration;
 
 import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -16,20 +17,42 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.webkit.WebView;
+import com.androidnetworking.AndroidNetworking;
+import com.androidnetworking.common.Priority;
+import com.androidnetworking.error.ANError;
+import com.androidnetworking.interfaces.JSONArrayRequestListener;
+import com.androidnetworking.interfaces.JSONObjectRequestListener;
+import com.androidnetworking.interfaces.OkHttpResponseListener;
+import com.androidnetworking.interfaces.StringRequestListener;
+import model.Roles;
+import okhttp3.Response;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class RealMain extends AppCompatActivity {
 
     private static final String TAG = "RealMain";
     private final static String GNU_PACKAGE = "com.gnuroot.debian";
+   private final ArrayList<Roles> mRoles = new ArrayList<>();
+    private String tag_json_obj = "tag-json-obj";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_real_main);
         AssetManager assetManager = getAssets();
+        AndroidNetworking.initialize(getApplicationContext());
+
+
 
         Intent intent = new Intent(this, WebViewActivity.class);
         Log.d(TAG, "onCreate: lifexx" + getApplicationInfo().dataDir);
@@ -83,7 +106,43 @@ public class RealMain extends AppCompatActivity {
             }
         }
 
-        finish();
+    //    finish();
+
+        // Tag used to cancel the request
+//        String url = "http://www.schoollms.net/drupalgap/school_lms_resources/user_details_service.json";
+//        Log.d("RealMain", "Hello there");
+//        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST,
+//                url, null,
+//                new Response.Listener<JSONObject>() {
+//
+//                    @Override
+//                    public void onResponse(JSONObject response) {
+//                        Log.d(TAG, response.toString());
+//                        Log.d("RealMain", "Hello there");
+//                    }
+//                }, new Response.ErrorListener() {
+//
+//            @Override
+//            public void onErrorResponse(VolleyError error) {
+//                VolleyLog.d(TAG, "Error: " + error.getMessage());
+//            }
+//        }) {
+//
+//            /**
+//             * Passing some request headers
+//             * */
+//            @Override
+//            public Map<String, String> getHeaders() throws AuthFailureError {
+//                HashMap<String, String> headers = new HashMap<String, String>();
+//                headers.put("message", "get:roles");
+//                return headers;
+//            }
+//
+//        };
+//
+//// Adding request to request queue
+//        AppController.getInstance().addToRequestQueue(jsonObjReq, tag_json_obj);
+
     }
 
     private void startFormActivity(AssetManager assetManager, File sdcardAndroidDir) throws IOException {
@@ -249,5 +308,23 @@ public class RealMain extends AppCompatActivity {
         }
     }
 
+
+
+//    private void restIt() {
+//        ApiEndPoint client = ApiClient.getClient().create(ApiEndPoint.class);
+//        final Call<Roles> roles = client.getRoles("get:roles");
+//        roles.enqueue(new Callback<Roles>() {
+//            @Override
+//            public void onResponse(Call<Roles> call, Response<Roles> response) {
+//               mRoles.add(response.body());
+//            }
+//
+//            @Override
+//            public void onFailure(Call<Roles> call, Throwable t) {
+//
+//            }
+//        });
+//
+//        }
 
 }

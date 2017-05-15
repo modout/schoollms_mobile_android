@@ -2,37 +2,53 @@ package net.schoollms.schoollmsregistration;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Environment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.Editable;
 import android.text.TextUtils;
+
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.*;
+import com.androidnetworking.AndroidNetworking;
+import com.androidnetworking.common.Priority;
+import com.androidnetworking.error.ANError;
+import com.androidnetworking.interfaces.JSONObjectRequestListener;
+import com.androidnetworking.interfaces.StringRequestListener;
+import com.androidnetworking.interfaces.UploadProgressListener;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
 import gun0912.tedbottompicker.TedBottomPicker;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
     private static final String TAG = "MainActivity";
     private String[] ids;
     private String schoolName;
+    private final static ArrayList<String> stringArrayList = new ArrayList<>();
+    private final static ArrayList<String> stringSchools = new ArrayList<>();
+    private Uri mUri;
+    private int userId ;
+    private Toast toast;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        String[] roles = {"Learner", "Support", "Teacher"};
-        String[] schools = {"School A", "School B", "School C"};
-        ids = new String[]{"5678", "1234", "3456"};
-
         Spinner spRoles = (Spinner) findViewById(R.id.spinner_roles);
         final AutoCompleteTextView spSchoolName = (AutoCompleteTextView) findViewById(R.id.et_school_name);
         TextView tvSchoolName = (TextView) findViewById(R.id.txt_school_name);
@@ -45,27 +61,143 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Button btnNo = (Button) findViewById(R.id.btn_no);
         final LinearLayout linearLayout = (LinearLayout) findViewById(R.id.layout_confirm_details);
         final Button btnDone = (Button) findViewById(R.id.btn_done);
+        final ArrayAdapter<String> ad = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item);
+        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
+        final ImageView imageView = (ImageView) findViewById(R.id.image_profile);
+        final Button btnSend = (Button) findViewById(R.id.btn_send);
+
+
+        SharedPreferences main = getSharedPreferences("main", MODE_PRIVATE);
+
+        final String[] token = {""};
+
+
+        String[] roles = {"Learner", "Support", "Teacher"};
+        final String[] schools = {"School A", "School B", "School C"};
+        ids = new String[]{"5678", "1234", "3456"};
+
+
+        AndroidNetworking.post("http://www.schoollms.net/services/session/token")
+                .setPriority(Priority.MEDIUM)
+//                .add
+                .build()
+                .getAsString(new StringRequestListener() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d(TAG, "onResponse: hello there " + response);
+                        token[0] = response;
+                    }
+
+                    @Override
+                    public void onError(ANError anError) {
+                        Log.d(TAG, "onResponse: hello there ERR " + anError.getResponse());
+
+                    }
+                });
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                AndroidNetworking.post("http://www.schoollms.net/drupalgap/school_lms_resources/user_details_service.json")
+                        .setPriority(Priority.LOW)
+                        .addHeaders("X-CSRF-Token", token[0].equals("") ? "oSJwTj-O1J99uiMvnvtNEQgV9uqoUjQJoct6WYytwbA" : token[0])
+                        .addBodyParameter("message", "get:schools")
+                        .build()
+                        .getAsJSONObject(new JSONObjectRequestListener() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                Iterator<String> keys = response.keys();
+                                for (int i = 0; i < response.length(); i++) {
+                                    try {
+                                        String k = keys.next();
+                                        String string = response.getString(k);
+//                                        stringSchools.add(string);
+                                        adapter.add(string);
+                                        adapter.notifyDataSetChanged();
+                                        Log.d(TAG, "onResponse: ressss: " + string);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                }
+                            }
+
+                            @Override
+                            public void onError(ANError anError) {
+                                Log.d(TAG, "onError: error" + anError.toString());
+                            }
+                        });
+            }
+        });
+        t.start();
+
+
+
+        AndroidNetworking.post("http://www.schoollms.net/drupalgap/school_lms_resources/user_details_service.json")
+                .setPriority(Priority.LOW)
+                .addHeaders("X-CSRF-Token", token[0].equals("") ? "oSJwTj-O1J99uiMvnvtNEQgV9uqoUjQJoct6WYytwbA" : token[0])
+                .addBodyParameter("message", "get:roles")
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        for (int i = 0; i < response.length(); i++) {
+                            try {
+                                String string = response.getString(i + "");
+                                string = string.toUpperCase();
+                                ad.add(string);
+                                ad.notifyDataSetChanged();
+                                Log.d(TAG, "onResponse: ressss: " + string);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+                    }
+
+                    @Override
+                    public void onError(ANError anError) {
+                        Log.d(TAG, "onError: error" + anError.toString());
+                    }
+                });
+
+
+        Log.d(TAG, "onCreate: size of array" + stringArrayList.size());
+
 
         btnDone.setVisibility(View.VISIBLE);
 
+        String[] mnx = new String[stringArrayList.size()];
+        Log.d(TAG, "onCreate: the ssize of this i " + stringArrayList.size());
+        for (int i = 0; i < stringArrayList.size(); i++) {
+            mnx[i] = stringArrayList.get(i);
+        }
+        ad.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spRoles.setAdapter(ad);
+        ad.notifyDataSetChanged();
+
+
         String role = (String) spRoles.getSelectedItem();
-        //etSurname.editab
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, schools);
         spSchoolName.setAdapter(adapter);
         spSchoolName.setOnItemClickListener(this);
-
+        spSchoolName.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String school = (String)parent.getItemAtPosition(position);
+                schoolName = school;
+            }
+        });
         final String userId = etID.getText().toString();
 
         btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(schoolName == null || TextUtils.isEmpty(schoolName)) {
-                    spSchoolName.setError("Please enter a school to continue");
+                if (schoolName == null || TextUtils.isEmpty(schoolName)) {
+                     spSchoolName.setError("Please enter a school to continue");
                 } else if (TextUtils.isEmpty(etID.getText().toString())) {
                     etID.setError("Please enter your ID to continue");
                 } else {
-                    tvName.setText("John");
-                    etSurname.setText("Smith");
+                   // t2.start();
+                    getNameAndSurname(token, tvName, etSurname, etID);
                     Toast.makeText(MainActivity.this, "Scroll down now to validate you infomation", Toast.LENGTH_LONG).show();
                     btnDone.setVisibility(View.GONE);
                     linearLayout.setVisibility(View.VISIBLE);
@@ -100,27 +232,81 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     @Override
                     public void onImageSelected(Uri uri) {
                         Log.d(TAG, "onImageSelected: " + uri.getPath());
+                        imageView.setImageURI(uri);
+                        mUri = uri;
                     }
                 })
                 .create();
 
-
-
-
-        btnYes.setOnClickListener(  new View.OnClickListener() {
+        btnYes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+              //  t2.isAlive();
                 Toast.makeText(getApplicationContext(), "Starting image picker", Toast.LENGTH_LONG);
                 Intent intent = new Intent(MainActivity.this, WebViewActivity.class);
-                tedBottomPicker.show(getSupportFragmentManager());
-                startGNUInstaller();
-                startActivity(intent);
+                if(!tvName.getText().toString().equals("")) {
+                    tedBottomPicker.show(getSupportFragmentManager());
+                } else {
+                    Toast.makeText(MainActivity.this, "Recheck your Form and press Submit again or press not me this incidence will be reported", Toast.LENGTH_LONG).show();
+                    btnDone.setVisibility(View.VISIBLE);
+                   // uploadThePicture();
+                }
+
+            }
+        });
+        btnNo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog al = new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("Error")
+                        .setMessage("Please contact your school admin!")
+                        .create();
+                al.show();
             }
         });
 
+        btnSend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    Log.d(TAG, "onClick: seding img");
+                    toast = Toast.makeText(MainActivity.this, "Uploading", Toast.LENGTH_LONG);
+                    uploadThePicture(mUri, token, etID);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
 
 
+    private void uploadThePicture(Uri uri, String[] token, TextView etID) throws IOException {
+        File file = new File(uri.getPath());
+        FileInputStream fileInputStream = new FileInputStream(file);
+        byte[] bytes = new byte[(int) file.length()];
+        fileInputStream.read(bytes);
+        toast.show(); // show that its uploading
+        String encodedFile = Base64.encodeToString(bytes, Base64.DEFAULT);
+        Log.d(TAG, "uploadThePicture: the encoding" + encodedFile);
+        AndroidNetworking.post("http://www.schoollms.net/drupalgap/school_lms_resources/user_details_service.json")
+                .setPriority(Priority.HIGH)
+                .addHeaders("X-CSRF-Token", token[0].equals("") ? "oSJwTj-O1J99uiMvnvtNEQgV9uqoUjQJoct6WYytwbA" : token[0])
+                .addBodyParameter("message", "send:photo:" + userId + ":" + encodedFile)
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        toast.setText("Uploadeded");
+                        toast.show();
+                        Log.d(TAG, "onResponse: the resposesssss" + response.toString());
+                    }
+                    @Override
+                    public void onError(ANError error) {
+                        // handle error
+                        Log.d(TAG, "onResponse: the errroorr" + error.toString());
 
+                    }
+                });
     }
 
     private void startGNUInstaller() {
@@ -135,8 +321,46 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         in.setDataAndType(uri, "application/vnd.android.package-archive").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         this.startActivity(in);
     }
+
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         schoolName = (String) parent.getItemAtPosition(position);
+    }
+    private void getNameAndSurname(String[] token, final TextView tvName,final TextView etSurname, TextView etID) {
+        Log.d(TAG, "run: in here man:" );
+        AndroidNetworking.post("http://www.schoollms.net/drupalgap/school_lms_resources/user_details_service.json")
+                .setPriority(Priority.HIGH)
+                .addHeaders("X-CSRF-Token", token[0].equals("") ? "oSJwTj-O1J99uiMvnvtNEQgV9uqoUjQJoct6WYytwbA" : token[0])
+                .addBodyParameter("message", "get:details:" + etID.getText().toString() + ":schoollms_schema_userdata_access_profile")
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            Log.d(TAG, "onResponse: response: " + response.toString());
+                            final String name = response.getString("name");
+                            final String surname = response.getString("surname");
+                            userId = Integer.parseInt(response.getString("user_id"));
+                            Log.d(TAG, "onResponse: resposnse name:" + name + "surane: " + surname);
+                            MainActivity.this.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    tvName.setText(name);
+                                    etSurname.setText(surname);
+                                }
+                            });
+
+                        } catch (JSONException e) {
+                            Log.d("MainActivity","hello in here");
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onError(ANError anError) {
+                        Log.d(TAG, "onError: erros is here man: " + anError.toString());
+                    }
+                });
+
     }
 }

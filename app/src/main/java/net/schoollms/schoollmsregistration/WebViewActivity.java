@@ -59,7 +59,7 @@ public class WebViewActivity extends AppCompatActivity implements PopupMenu.OnMe
 
         if((pref.getString("url", "http://timetable.schoollms.net/").equals("http://timetable.schoollms.net/"))) {
             btn.setVisibility(View.VISIBLE);
-            showPopup(btn);
+           // showPopup(btn);
         }
 
         final Timer t = new Timer();
