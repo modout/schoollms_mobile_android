@@ -2,7 +2,6 @@ package net.schoollms.schoollmsregistration;
 
 import android.Manifest;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.v7.app.AlertDialog;
@@ -45,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private int selectedSchoolID;
     private int yearId;
     private int sIp;
+    private  int counter = 0;
 
 
     @Override
@@ -53,10 +53,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         setContentView(R.layout.activity_main);
         final Spinner spRoles = (Spinner) findViewById(R.id.spinner_roles);
         final AutoCompleteTextView spSchoolName = (AutoCompleteTextView) findViewById(R.id.et_school_name);
-        TextView tvSchoolName = (TextView) findViewById(R.id.txt_school_name);
-        TextView tvId = (TextView) findViewById(R.id.txt_ID);
         final EditText etID = (EditText) findViewById(R.id.editText_ID);
-        TextView tvSurname = (TextView) findViewById(R.id.txt_name);
         final TextView tvName = (TextView) findViewById(R.id.editText_name);
         final EditText etSurname = (EditText) findViewById(R.id.editText_surname);
         Button btnYes = (Button) findViewById(R.id.btn_yes);
@@ -67,8 +64,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
         final ImageView imageView = (ImageView) findViewById(R.id.image_profile);
         final Button btnSend = (Button) findViewById(R.id.btn_send);
-
-        SharedPreferences main = getSharedPreferences("main", MODE_PRIVATE);
+        final LinearLayout lnrOther = (LinearLayout) findViewById(R.id.lnrOtherInput);
 
         final String[] token = {""};
 
@@ -127,9 +123,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         });
         t.start();
-
-
-
         AndroidNetworking.post("http://www.schoollms.net/drupalgap/school_lms_resources/user_details_service.json")
                 .setPriority(Priority.LOW)
                 .addHeaders("X-CSRF-Token", token[0].equals("") ? "oSJwTj-O1J99uiMvnvtNEQgV9uqoUjQJoct6WYytwbA" : token[0])
@@ -184,6 +177,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 schoolName = school;
             }
         });
+
+        spRoles.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if(counter >= 1) {
+                    lnrOther.setVisibility(View.VISIBLE);
+                }
+                ++counter;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                Toast.makeText(MainActivity.this, "Please select an option!", Toast.LENGTH_LONG).show();
+            }
+        });
+
         final String userId = etID.getText().toString();
 
         btnDone.setOnClickListener(new View.OnClickListener() {

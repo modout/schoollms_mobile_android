@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView  xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+    <LinearLayout
+            android:id="@+id/activity_installer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:orientation="vertical"
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:paddingTop="@dimen/activity_vertical_margin"
+            android:paddingBottom="@dimen/activity_vertical_margin"
+            tools:context="net.schoollms.schoollmsregistration.InstallerActivity">
+
+
+        <ImageView android:layout_width="400dp"
+                   android:layout_gravity="center"
+                   android:src="@drawable/logo_img"
+                   android:layout_height="400dp"/>
+
+        <TextView android:layout_width="wrap_content"
+                  android:textStyle="bold"
+                  android:textSize="18sp"
+                  android:gravity="center"
+                  android:layout_marginBottom="10dp"
+                  android:text="Welcome! \n You are now part of the SchoolLMS community. \n
+                  Let's get you started. The first button below will help you complete the following \n \n 1) Fill up Registration Form  \n 2) Take selfie \n 3) install base Apps \n \n  "
+                  android:layout_height="wrap_content"/>
+
+        <Button
+                android:text="Register and Install SchoolLMS base apps"
+                android:layout_width="match_parent"
+                android:layout_marginBottom="10dp"
+                android:layout_height="wrap_content"
+                android:textColor="#ffffff"
+                android:background="@color/colorPrimary"
+                android:id="@+id/btn_base"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"/>
+
+        <TextView android:layout_width="wrap_content"
+                  android:textSize="18sp"
+                  android:layout_marginBottom="10dp"
+                  android:text="The second button below will help you install the SchoolLMS offline apps based on your profile \n \n  "
+                  android:layout_height="wrap_content"/>
+
+        <Button
+                android:text="Install SchoolLMS core Apps"
+                android:background="@color/colorPrimary"
+                android:enabled="false"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#ffffff"
+                android:id="@+id/btn_install_core"
+                android:layout_marginBottom="10dp"
+                android:layout_alignParentEnd="true"/>
+
+        <TextView android:layout_width="wrap_content"
+                  android:textSize="18sp"
+                  android:layout_marginBottom="10dp"
+                  android:text="The last button below will start the offline app \n \n  "
+                  android:layout_height="wrap_content"/>
+        <Button
+                android:text="Start SchoolLMS"
+                android:layout_width="match_parent"
+                android:textColor="#ffffff"
+                android:background="@color/colorPrimary"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+                android:layout_marginBottom="10dp"
+                android:id="@+id/btn_start_lms"
+                android:layout_below="@+id/btn_install_core"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+        />
+    </LinearLayout>
+
+
+</ScrollView>

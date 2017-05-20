@@ -41,9 +41,9 @@ public class WebViewActivity extends AppCompatActivity implements PopupMenu.OnMe
     private static final String TAG = "WebViewActivity";
     private static final String PREF_NAME = "BrowserHistory";
     private SharedPreferences pref;
-    public static int TYPE_WIFI = 1;
-    public static int TYPE_MOBILE = 2;
-    public static int TYPE_NOT_CONNECTED = 0;
+    private static int TYPE_WIFI = 1;
+    private static int TYPE_MOBILE = 2;
+    private static int TYPE_NOT_CONNECTED = 0;
     String u = null;
     private String ux;
 
@@ -67,6 +67,8 @@ public class WebViewActivity extends AppCompatActivity implements PopupMenu.OnMe
         Button btn = (Button) findViewById(R.id.button_menu);
         btn.setVisibility(View.GONE);
 
+        Log.d(TAG, "onCreate: in here: webview");
+
         u = "localhost:2080";
         if (getConnectivityStatus(this) == TYPE_WIFI) {
             u = getIntent().getStringExtra("schoolIp") + "/vas/timetable";
@@ -85,6 +87,7 @@ public class WebViewActivity extends AppCompatActivity implements PopupMenu.OnMe
             public void run() {
                 if(execCmd()) {
                     t.cancel();
+                    Log.d(TAG, "the command has been executed");
                     Intent in = new Intent(getApplicationContext(), WebViewActivity.class);
                     startActivity(in);
                 }
@@ -156,15 +159,11 @@ public class WebViewActivity extends AppCompatActivity implements PopupMenu.OnMe
                 Log.d(TAG, "execCmd: the value: " + line);
             }
             s = log.toString();
-            if (s.contains("auto")) {
-                return true ;
-            } else return false;
+            return s.contains("auto");
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (s.contains("auto")) {
-            return true ;
-        } else return false;
+        return s.contains("auto");
     }
 
     private void showPopup(View view) {
