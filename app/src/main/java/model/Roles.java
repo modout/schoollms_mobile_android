@@ -2,6 +2,9 @@ package model;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+
 /**
  * Created by divine on 2017/05/14.
  */
@@ -77,5 +80,6 @@ public class Roles {
     public void set7(String _7) {
         this._7 = _7;
     }
+
 
 }

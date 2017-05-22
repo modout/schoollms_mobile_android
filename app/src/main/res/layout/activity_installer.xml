@@ -36,7 +36,6 @@
                 android:layout_width="match_parent"
                 android:layout_marginBottom="10dp"
                 android:layout_height="wrap_content"
-                android:textColor="#ffffff"
                 android:background="@color/colorPrimary"
                 android:id="@+id/btn_base"
                 android:layout_alignParentTop="true"
@@ -55,7 +54,6 @@
                 android:enabled="false"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="#ffffff"
                 android:id="@+id/btn_install_core"
                 android:layout_marginBottom="10dp"
                 android:layout_alignParentEnd="true"/>
@@ -68,7 +66,6 @@
         <Button
                 android:text="Start SchoolLMS"
                 android:layout_width="match_parent"
-                android:textColor="#ffffff"
                 android:background="@color/colorPrimary"
                 android:layout_height="wrap_content"
                 android:enabled="false"

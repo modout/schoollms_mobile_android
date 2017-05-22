@@ -2,8 +2,11 @@
 
 #Check system information - cloud 
 echo "Checking system information..."
+cd /sdcard/GNURoot/home
 tar -xvf install.tar.gz
-cd install
+echo '-----------PWD-------------'
+pwd
+echo '-----------PWD END-------------'
 echo "running the new script!"
 ./install_schoollms_core.sh
-cat "It has been written" > hello.txt
+#go to real

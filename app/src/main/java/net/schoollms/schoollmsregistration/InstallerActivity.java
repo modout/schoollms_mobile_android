@@ -25,8 +25,9 @@ public class InstallerActivity extends AppCompatActivity {
 
     private String TAG = "InstallerActivity";
     private SharedPreferences sharedPreferences;
-    private final static String GNU_PACKAGE = "com.gnuroot.debian";
     private final ArrayList<Roles> mRoles = new ArrayList<>();
+    public static final String GNU_PACKAGE = "com.gnuroot.debian";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,47 +35,50 @@ public class InstallerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_installer);
 
-        Button btnBase = (Button) findViewById(R.id.btn_base);
-        Button btnCore = (Button) findViewById(R.id.btn_install_core);
-        Button btnStart = (Button) findViewById(R.id.btn_start_lms);
-
+        final Button btnBase = (Button) findViewById(R.id.btn_base);
+        final Button btnCore = (Button) findViewById(R.id.btn_install_core);
+        final Button btnStart = (Button) findViewById(R.id.btn_start_lms);
         sharedPreferences = getSharedPreferences("status", MODE_PRIVATE);
-        btnBase.setEnabled(true);
-
-        boolean baseInstalled = sharedPreferences.getBoolean("baseInstalled", false);
+        final SharedPreferences.Editor editor = sharedPreferences.edit();
+        boolean started = sharedPreferences.getBoolean("started", false);
         boolean coreInstalled = sharedPreferences.getBoolean("coreInstalled", false);
+        boolean baseInstalled = sharedPreferences.getBoolean("baseInstalled", false);
 
         if(baseInstalled) {
-            btnBase.setEnabled(false);
-            btnCore.setEnabled(true);
-            btnStart.setEnabled(false);
-            if(coreInstalled) {
-                btnBase.setEnabled(false);
-                btnCore.setEnabled(false);
-                btnStart.setEnabled(true);
-            } else {
-                btnBase.setEnabled(false);
-                btnCore.setEnabled(true);
-                btnStart.setEnabled(false);
-            }
-        } else {
-            btnBase.setEnabled(true);
             btnCore.setEnabled(false);
+            btnBase.setEnabled(true);
             btnStart.setEnabled(false);
-
-
+        } else if(coreInstalled) {
+            btnCore.setEnabled(true);
+            btnBase.setEnabled(false);
+            btnStart.setEnabled(false);
+        } else if (started) {
+            btnCore.setEnabled(false);
+            btnBase.setEnabled(false);
+            btnStart.setEnabled(true);
         }
-
+        //TODO: comment me out! please!
+//        btnCore.setEnabled(true);
+//        btnBase.setEnabled(true);
+//        btnStart.setEnabled(true);
 
         btnBase.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                sharedPreferences.edit().putBoolean("baseInstalled", true).commit();
+                editor.putBoolean("started", false).commit();
+                editor.putBoolean("coreInstalled", true).commit();
+                editor.putBoolean("baseInstalled", false).commit();
+
+
+
                 try {
 
                     //check space first
-                    copyAssets("net.schoollms.schoollmsregistration");
+                    //should only be done one in a life time
+                    if(!sharedPreferences.getBoolean("hasItWritten", false)) {
+                        copyAssets("net.schoollms.schoollmsregistration");
+                    }
 
                     StatFs stat = new StatFs(Environment.getExternalStorageDirectory().getPath());
                     long bytesAvailable = (long) stat.getBlockSize() * (long) stat.getAvailableBlocks();
@@ -91,7 +95,7 @@ public class InstallerActivity extends AppCompatActivity {
                                 })
                                 .setIcon(android.R.drawable.ic_dialog_alert)
                                 .show();
-                        return;   //ED+XIT IF NOT ENOUGH SPACE!!!!
+                        return;   //ExIT IF NOT ENOUGH SPACE!!!!
                     }
                     //CReate OBB foldert!
                     File sdcardAndroidDir = new File(Environment.getExternalStorageDirectory().getAbsoluteFile().getAbsolutePath() + "/Android/obb/com.gnuroot.debian");
@@ -115,6 +119,9 @@ public class InstallerActivity extends AppCompatActivity {
         btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                editor.putBoolean("started", false).commit();
+                editor.putBoolean("coreInstalled", false).commit();
+                editor.putBoolean("baseInstalled", false).commit();
 
                 Intent in = new Intent(InstallerActivity.this, WebViewActivity.class);
                 startActivity(in);
@@ -124,28 +131,52 @@ public class InstallerActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-                sharedPreferences.edit().putBoolean("coreInstalled", true).apply();
+                editor.putBoolean("started", true).commit();
+                editor.putBoolean("coreInstalled", false).commit();
+                editor.putBoolean("baseInstalled", false).commit();
+
                 if (isPackageInstalled(GNU_PACKAGE, InstallerActivity.this.getPackageManager())) {
                     Log.d(TAG, "onCreate: GNU is installed!");
-
-//            intent.putExtra("isInstalled", true); // installed and running
-                    //open webview to local host
                     Log.d(TAG, "onCreate: is Running!!!");
                     startGNUApk();  // tries to access GNURoot! watch out
-                    //   finish(); // CLOSE THAT ACTIVITY
-                    //   startActivity(intent);
+                }  else {
+                    Log.d(TAG, "onClick: aggg: the gnu pagae is not installed");
+                    Toast.makeText(InstallerActivity.this, "Please complete the step above before continueing", Toast.LENGTH_LONG).show();
+                    editor.putBoolean("started", false).commit();
+                    editor.putBoolean("coreInstalled", false).commit();
+                    editor.putBoolean("baseInstalled", true).commit();
 
+                    boolean started = sharedPreferences.getBoolean("started", false);
+                    boolean coreInstalled = sharedPreferences.getBoolean("coreInstalled", false);
+                    boolean baseInstalled = sharedPreferences.getBoolean("baseInstalled", false);
+
+                    if(baseInstalled) {
+                        btnCore.setEnabled(false);
+                        btnBase.setEnabled(true);
+                        btnStart.setEnabled(false);
+                    } else if(coreInstalled) {
+                        btnCore.setEnabled(true);
+                        btnBase.setEnabled(false);
+                        btnStart.setEnabled(false);
+                    } else if (started) {
+                        btnCore.setEnabled(false);
+                        btnBase.setEnabled(false);
+                        btnStart.setEnabled(true);
+                    }
                 }
             }
         });
     }
 
     private void startFormActivity(AssetManager assetManager, File sdcardAndroidDir) throws IOException {
-        InputStream inputStream = assetManager.open("main.10.com.gnuroot.debian.obb");
-        Log.d(TAG, "onCreate: onassetmanO open " + inputStream.available());
-        coppGNUOBB(sdcardAndroidDir, inputStream);
-        copyAssetTrackerFile(assetManager);
-        copyAssetGNUToFile(assetManager);
+        if (!sharedPreferences.getBoolean("hasItWrittenGUNFILES", false)) {
+            InputStream inputStream = assetManager.open("main.10.com.gnuroot.debian.obb");
+            Log.d(TAG, "onCreate: onassetmanO open " + inputStream.available());
+            coppGNUOBB(sdcardAndroidDir, inputStream);
+            copyAssetTrackerFile(assetManager);
+            copyAssetGNUToFile(assetManager);
+            sharedPreferences.edit().putBoolean("hasItWrittenGUNFILES", true);
+        }
         Intent formIntent = new Intent(this, MainActivity.class);
         startActivity(formIntent);
     }
@@ -209,7 +240,8 @@ public class InstallerActivity extends AppCompatActivity {
     private void startGNUApk() {
             //I must rename the package
             Intent intent = getLaunchIntent();
-            startActivityForResult(intent, 600);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
 
         // startActivityForResult(fmIntent, 600);
     }
@@ -235,24 +267,16 @@ public class InstallerActivity extends AppCompatActivity {
     private void copyAssets(String packageName) throws IOException {
         File sdcardAndroidDir = new File(Environment.getExternalStorageDirectory().getAbsoluteFile().getAbsolutePath());
         InputStream inputStream = getAssets().open("install_core.sh");
-        InputStream inputStream2 = getAssets().open("install.mp3");
         Log.d(TAG, "onCreate: onassetmanO open " + inputStream.available());
-        Log.d(TAG, "onCreate: onassetmanO open oonnnnnnn " + inputStream2.available());
+        File f = new File(sdcardAndroidDir.getAbsolutePath() + "/GNURoot/home");
+        boolean mkdirs = f.mkdirs();//please make the directories if the don`t exit
+        Log.d(TAG, "copyAssets: did we mk the dir?: " + mkdirs);
         FileOutputStream fileOutputStream = new FileOutputStream(sdcardAndroidDir.getAbsolutePath() + "/GNURoot/home/install_core.sh");
-        FileOutputStream fileOutputStream2 = new FileOutputStream(sdcardAndroidDir.getAbsolutePath() + "/GNURoot/home/install.tar.gz");
         //     byte[] buffer = new byte[inputStream.available()];
         byte[] buffer = new byte[1024];
         int r;
-        byte[] buffer2 = new byte[1024];
-        int r2;
         while ((r = inputStream.read(buffer)) != -1) {
             fileOutputStream.write(buffer, 0, r);
-
-        }
-
-        while ((r2 = inputStream2.read(buffer2)) != -1) {
-            fileOutputStream2.write(buffer, 0, r2);
-
         }
 
         inputStream.close();
@@ -262,13 +286,32 @@ public class InstallerActivity extends AppCompatActivity {
         fileOutputStream.flush();
         fileOutputStream.close();
         fileOutputStream = null;
-        inputStream2.close();
-        inputStream2 = null;
+        cp(sdcardAndroidDir);
+        sharedPreferences.edit().putBoolean("hasItWritten", true).commit();
+    }
 
-        // write the output file
-        fileOutputStream2.flush();
-        fileOutputStream2.close();
-        fileOutputStream2 = null;
+    private void cp(File sdcardAndroidDir) {
+        int r2;
+        InputStream inputStream2 = null;
+        try {
+            inputStream2 = getAssets().open("install.mp3");
+            Log.d(TAG, "onCreate: onassetmanO open oonnnnnnn " + inputStream2.available());
+            FileOutputStream fileOutputStream2 = new FileOutputStream(sdcardAndroidDir.getAbsolutePath() + "/GNURoot/home/install.tar.gz");
+            byte[] buffer2 = new byte[1024];
+            while ((r2 = inputStream2.read(buffer2)) != -1) {
+                fileOutputStream2.write(buffer2, 0, r2);
+            }
+            inputStream2.close();
+            inputStream2 = null;
+
+            // write the output file
+            fileOutputStream2.flush();
+            fileOutputStream2.close();
+            fileOutputStream2 = null;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
     }
 
@@ -304,7 +347,33 @@ public class InstallerActivity extends AppCompatActivity {
         return false;
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        sharedPreferences = getSharedPreferences("status", MODE_PRIVATE);
+        boolean started = sharedPreferences.getBoolean("started", false);
+        boolean coreInstalled = sharedPreferences.getBoolean("coreInstalled", false);
+        boolean baseInstalled = sharedPreferences.getBoolean("baseInstalled", false);
 
+        Button btnBase = (Button) findViewById(R.id.btn_base);
+        Button btnCore = (Button) findViewById(R.id.btn_install_core);
+        Button btnStart = (Button) findViewById(R.id.btn_start_lms);
+        Log.d(TAG, "onStart: we have started man: ");
+
+        if(baseInstalled) {
+            btnCore.setEnabled(false);
+            btnBase.setEnabled(true);
+            btnStart.setEnabled(false);
+        } else if(coreInstalled) {
+            btnCore.setEnabled(true);
+            btnBase.setEnabled(false);
+            btnStart.setEnabled(false);
+        } else if (started) {
+            btnCore.setEnabled(false);
+            btnBase.setEnabled(false);
+            btnStart.setEnabled(true);
+        }
+    }
 
     /**
      * Returns a Uri for the custom tar placed in the project's assets directory.
@@ -316,10 +385,6 @@ public class InstallerActivity extends AppCompatActivity {
         return FileProvider.getUriForFile(this, "net.schoollms.schoollmsregistration.fileprovider", fileHandle);
     }
 
-    /**
-     * Renames assets from .mp3 to .tar.gz.
-     *
-     * @param packageName
-     */
+
 
 }

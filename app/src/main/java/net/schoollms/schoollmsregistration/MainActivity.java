@@ -2,6 +2,7 @@ package net.schoollms.schoollmsregistration;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.v7.app.AlertDialog;
@@ -21,6 +22,8 @@ import com.androidnetworking.interfaces.StringRequestListener;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
 import gun0912.tedbottompicker.TedBottomPicker;
+import services.FileSizeWatcherService;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -45,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private int yearId;
     private int sIp;
     private  int counter = 0;
+    SharedPreferences s;
 
 
     @Override
@@ -65,8 +69,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         final ImageView imageView = (ImageView) findViewById(R.id.image_profile);
         final Button btnSend = (Button) findViewById(R.id.btn_send);
         final LinearLayout lnrOther = (LinearLayout) findViewById(R.id.lnrOtherInput);
+        s = getSharedPreferences("school_pref", MODE_PRIVATE);
+
+
+
 
         final String[] token = {""};
+
+
+
+
+        //INITIALIZINALL ALL THE STUFF
+
 
         String[] roles = {"Learner", "Support", "Teacher"};
         final String[] schools = {"School A", "School B", "School C"};
@@ -81,6 +95,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     public void onResponse(String response) {
                         Log.d(TAG, "onResponse: hello there " + response);
                         token[0] = response;
+                        s.edit().putString("token", token[0]);
+                        getSchoolIP(token[0]);
+                        getYearId(token);
+
                     }
 
                     @Override
@@ -240,19 +258,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         btnYes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-              //  t2.isAlive();
-                Toast.makeText(getApplicationContext(), "Starting image picker", Toast.LENGTH_LONG);
-                Intent intent = new Intent(MainActivity.this, WebViewActivity.class);
-                intent.putExtra("schoolId", selectedSchoolID);
-                intent.putExtra("role", (String) spRoles.getSelectedItem());
-                intent.putExtra("userID", userId);
-                intent.putExtra("yearId", yearId);
-                intent.putExtra("schoolIp", sIp);
-
+                s.edit().putString("role", (String) spRoles.getSelectedItem());
                 if(!tvName.getText().toString().equals("")) {
                     tedBottomPicker.show(getSupportFragmentManager());
                 } else {
                     Toast.makeText(MainActivity.this, "Recheck your Form and press Submit again or press not me this incidence will be reported", Toast.LENGTH_LONG).show();
+                    linearLayout.setVisibility(View.GONE);
                     btnDone.setVisibility(View.VISIBLE);
                    // uploadThePicture();
                 }
@@ -264,9 +275,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             public void onClick(View v) {
                 AlertDialog al = new AlertDialog.Builder(MainActivity.this)
                         .setTitle("Error")
-                        .setMessage("Please contact your school admin!")
+                        .setMessage("Please contact your school admin! OR try again")
                         .create();
                 al.show();
+                btnDone.setVisibility(View.VISIBLE);
             }
         });
 
@@ -279,20 +291,21 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     Log.d(TAG, "onClick: seding img");
                     toast = Toast.makeText(MainActivity.this, "Uploading", Toast.LENGTH_LONG);
                     uploadThePicture(mUri, token, etID);
+                    Intent intent = new Intent(MainActivity.this, FileSizeWatcherService.class);
+                    startService(intent);
+                    if(spRoles.getSelectedItem().equals("Learner")) {
+                        learnerTimer.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                checkTheUserHasRegistered(token);
+                            }
+                        }, 1000 );
+                    } else {
+                        startGNUInstaller();
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                if(spRoles.getSelectedItem().equals("Learner")) {
-                    learnerTimer.schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            checkTheUserHasRegistered(token);
-                        }
-                    }, 1000 );
-                } else {
-                    startGNUInstaller();
-                }
-
             }
         });
     }
@@ -311,55 +324,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
 
-    private void getYearId(String[] token) {
-        AndroidNetworking.post("http://www.schoollms.net/drupalgap/school_lms_resources/user_details_service.json")
-                .setPriority(Priority.HIGH)
-                .addHeaders("X-CSRF-Token", token[0].equals("") ? "oSJwTj-O1J99uiMvnvtNEQgV9uqoUjQJoct6WYytwbA" : token[0])
-                .addBodyParameter("message", "get:year_id:" + getYear())
-                .build()
-                .getAsJSONObject(new JSONObjectRequestListener() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            String yId = response.getString("year_id");
-                            yearId = Integer.parseInt(yId);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    @Override
-                    public void onError(ANError error) {
-                        // handle error
-                        Log.d(TAG, "onResponse: the errroorr" + error.toString());
 
-                    }
-                });
-    }
 
-    private void getSchoolIP(String[] token) {
-        AndroidNetworking.post("http://www.schoollms.net/drupalgap/school_lms_resources/user_details_service.json")
-                .setPriority(Priority.HIGH)
-                .addHeaders("X-CSRF-Token", token[0].equals("") ? "oSJwTj-O1J99uiMvnvtNEQgV9uqoUjQJoct6WYytwbA" : token[0])
-                .addBodyParameter("message", "get:school_ip:"+ selectedSchoolID )
-                .build()
-                .getAsJSONObject(new JSONObjectRequestListener() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            String schoolIP = response.getString("school_ip");
-                            sIp = Integer.parseInt(schoolIP);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    @Override
-                    public void onError(ANError error) {
-                        // handle error
-                        Log.d(TAG, "onResponse: the errroorr" + error.toString());
 
-                    }
-                });
-    }
 
     private void checkTheUserHasRegistered(String[] token) {
         AndroidNetworking.post("http://www.schoollms.net/drupalgap/school_lms_resources/user_details_service.json")
@@ -427,6 +394,66 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 });
     }
 
+
+    private void getYearId(String[] token) {
+        AndroidNetworking.post("http://www.schoollms.net/drupalgap/school_lms_resources/user_details_service.json")
+                .setPriority(Priority.HIGH)
+                .addHeaders("X-CSRF-Token", token[0].equals("") ? "oSJwTj-O1J99uiMvnvtNEQgV9uqoUjQJoct6WYytwbA" : token[0])
+                .addBodyParameter("message", "get:year_id:" + getYear())
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            String yId = response.getString("year_id");
+                            yearId = Integer.parseInt(yId);
+                            s.edit().putInt("yearId", yearId);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    @Override
+                    public void onError(ANError error) {
+                        // handle error
+                        Log.d(TAG, "onResponse: the errroorr" + error.toString());
+
+                    }
+                });
+    }
+
+    public int getYear() {
+        Calendar now = Calendar.getInstance();   // Gets the current date and time
+        return now.get(Calendar.YEAR);
+
+    }
+
+    private void getSchoolIP(String token) {
+        AndroidNetworking.post("http://www.schoollms.net/drupalgap/school_lms_resources/user_details_service.json")
+                .setPriority(Priority.HIGH)
+                .addHeaders("X-CSRF-Token", token.equals("") ? "oSJwTj-O1J99uiMvnvtNEQgV9uqoUjQJoct6WYytwbA" : token)
+                .addBodyParameter("message", "get:school_ip:"+ selectedSchoolID )
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            String schoolIP = response.getString("school_ip");
+                            sIp = Integer.parseInt(schoolIP);
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    @Override
+                    public void onError(ANError error) {
+                        // handle error
+                        Log.d(TAG, "onResponse: the errroorr" + error.toString());
+
+                    }
+                });
+    }
+
+
     private void startGNUInstaller() {
         // launch nGNU installer
         File tempFile = Environment.getExternalStoragePublicDirectory(
@@ -457,6 +484,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         schoolName = (String) parent.getItemAtPosition(position);
         selectedSchoolID = Integer.parseInt(stringSchools.get(position));
+        s.edit().putInt("school_id", selectedSchoolID);
     }
     private void getNameAndSurname(String[] token, final TextView tvName,final TextView etSurname, TextView etID) {
         Log.d(TAG, "run: in here man:" );
@@ -473,6 +501,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                             final String name = response.getString("name");
                             final String surname = response.getString("surname");
                             userId = Integer.parseInt(response.getString("user_id"));
+                            s.edit().putInt("userId", userId);
                             Log.d(TAG, "onResponse: resposnse name:" + name + "surane: " + surname);
                             MainActivity.this.runOnUiThread(new Runnable() {
                                 @Override
@@ -496,9 +525,5 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     }
 
-    public int getYear() {
-        Calendar now = Calendar.getInstance();   // Gets the current date and time
-        return now.get(Calendar.YEAR);
 
-    }
 }

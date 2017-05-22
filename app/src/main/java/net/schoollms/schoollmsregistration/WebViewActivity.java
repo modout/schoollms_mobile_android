@@ -1,41 +1,24 @@
 package net.schoollms.schoollmsregistration;
 
-import android.Manifest;
 import android.app.Activity;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
-import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
-import android.os.Environment;
-import android.provider.Settings;
-import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.webkit.*;
 import android.widget.*;
-import com.gun0912.tedpermission.PermissionListener;
-import com.gun0912.tedpermission.TedPermission;
-import gun0912.tedbottompicker.TedBottomPicker;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import static android.net.ConnectivityManager.TYPE_MOBILE;
-import static android.net.ConnectivityManager.TYPE_WIFI;
 
 public class WebViewActivity extends AppCompatActivity implements PopupMenu.OnMenuItemClickListener {
     private static final String TAG = "WebViewActivity";
@@ -46,9 +29,13 @@ public class WebViewActivity extends AppCompatActivity implements PopupMenu.OnMe
     private static int TYPE_NOT_CONNECTED = 0;
     String u = null;
     private String ux;
+    private WebView view;
+
+    SharedPreferences s;
 
 
-    private    WebView view;
+    private String role;
+    private String yearId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,21 +44,26 @@ public class WebViewActivity extends AppCompatActivity implements PopupMenu.OnMe
         setContentView(R.layout.activity_web_view);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         CookieManager.getInstance().setAcceptCookie(true);
-        Display display = getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
         final ProgressBar bar = (ProgressBar) findViewById(R.id.webLoading);
         Intent intent = getIntent();
         pref = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+        s = getSharedPreferences("school_pref", MODE_PRIVATE);
+
 
         Button btn = (Button) findViewById(R.id.button_menu);
         btn.setVisibility(View.GONE);
+        String token = s.getString("token", "");
+        role = s.getString("role", "");
+        String userId = s.getString("userId", "");
+        String selectedSchoolID = s.getString("school_id", "");
+     //   sIp = s.getString("sIp", "");
+        yearId = s.getString("yearId", "");
 
         Log.d(TAG, "onCreate: in here: webview");
 
         u = "localhost:2080";
         if (getConnectivityStatus(this) == TYPE_WIFI) {
-            u = getIntent().getStringExtra("schoolIp") + "/vas/timetable";
+            u = u + "/vas/timetable";
         } else if(getConnectivityStatus(this) == TYPE_MOBILE) {
             u = "timetable.schoollms.net";
         }
@@ -95,7 +87,7 @@ public class WebViewActivity extends AppCompatActivity implements PopupMenu.OnMe
         }, 60);
 //        String androidId = Settings.Secure.getString(this.getContentResolver(),
 //                Settings.Secure.ANDROID_ID);
-        ux = "http://"+ u +"/viewtimetable.php?school_id=" + getIntent().getStringExtra("schoolId")+ "&user_type="+getIntent().getStringExtra("role")+"&user_id=" + getIntent().getStringExtra("userID") + "&year_id="+ getIntent().getStringExtra("yearId");
+        ux = "http://"+ u +"/viewtimetable.php?school_id=" + getIntent().getStringExtra("schoolId")+ "&user_type="+role+"&user_id=" + getIntent().getStringExtra("userID") + "&year_id="+ getIntent().getStringExtra("yearId");
 
         final String url[] = {ux};
         String prefString = pref.getString("url", ux);
