@@ -66,10 +66,10 @@ public class InstallerActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-                editor.putBoolean("started", false).commit();
-                editor.putBoolean("coreInstalled", true).commit();
-                editor.putBoolean("baseInstalled", false).commit();
-
+                editor.putBoolean("started", false);
+                editor.putBoolean("coreInstalled", true);
+                editor.putBoolean("baseInstalled", false);
+                editor.commit();
 
 
                 try {
@@ -119,10 +119,10 @@ public class InstallerActivity extends AppCompatActivity {
         btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                editor.putBoolean("started", false).commit();
-                editor.putBoolean("coreInstalled", false).commit();
-                editor.putBoolean("baseInstalled", false).commit();
-
+                editor.putBoolean("started", false);
+                editor.putBoolean("coreInstalled", false);
+                editor.putBoolean("baseInstalled", false);
+                editor.commit();
                 Intent in = new Intent(InstallerActivity.this, WebViewActivity.class);
                 startActivity(in);
             }
@@ -131,9 +131,10 @@ public class InstallerActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-                editor.putBoolean("started", true).commit();
-                editor.putBoolean("coreInstalled", false).commit();
-                editor.putBoolean("baseInstalled", false).commit();
+                editor.putBoolean("started", true);
+                editor.putBoolean("coreInstalled", false);
+                editor.putBoolean("baseInstalled", false);
+                editor.commit();
 
                 if (isPackageInstalled(GNU_PACKAGE, InstallerActivity.this.getPackageManager())) {
                     Log.d(TAG, "onCreate: GNU is installed!");
@@ -142,9 +143,10 @@ public class InstallerActivity extends AppCompatActivity {
                 }  else {
                     Log.d(TAG, "onClick: aggg: the gnu pagae is not installed");
                     Toast.makeText(InstallerActivity.this, "Please complete the step above before continueing", Toast.LENGTH_LONG).show();
-                    editor.putBoolean("started", false).commit();
-                    editor.putBoolean("coreInstalled", false).commit();
-                    editor.putBoolean("baseInstalled", true).commit();
+                    editor.putBoolean("started", false);
+                    editor.putBoolean("coreInstalled", false);
+                    editor.putBoolean("baseInstalled", true);
+                    editor.commit();
 
                     boolean started = sharedPreferences.getBoolean("started", false);
                     boolean coreInstalled = sharedPreferences.getBoolean("coreInstalled", false);
@@ -175,7 +177,7 @@ public class InstallerActivity extends AppCompatActivity {
             coppGNUOBB(sdcardAndroidDir, inputStream);
             copyAssetTrackerFile(assetManager);
             copyAssetGNUToFile(assetManager);
-            sharedPreferences.edit().putBoolean("hasItWrittenGUNFILES", true);
+            sharedPreferences.edit().putBoolean("hasItWrittenGUNFILES", true).commit();
         }
         Intent formIntent = new Intent(this, MainActivity.class);
         startActivity(formIntent);
@@ -373,6 +375,11 @@ public class InstallerActivity extends AppCompatActivity {
             btnBase.setEnabled(false);
             btnStart.setEnabled(true);
         }
+
+//        if (started) {
+//            Intent in = new Intent(this, WebViewActivity.class);
+//            startActivity(in);
+//        }
     }
 
     /**

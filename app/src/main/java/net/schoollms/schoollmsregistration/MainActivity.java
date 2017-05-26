@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private int sIp;
     private  int counter = 0;
     SharedPreferences s;
+    final String[] token = {""};
 
 
     @Override
@@ -74,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
 
 
-        final String[] token = {""};
+
 
 
 
@@ -95,9 +96,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     public void onResponse(String response) {
                         Log.d(TAG, "onResponse: hello there " + response);
                         token[0] = response;
-                        s.edit().putString("token", token[0]);
-                        getSchoolIP(token[0]);
-                        getYearId(token);
+                        s.edit().putString("token", token[0]).commit();
 
                     }
 
@@ -192,6 +191,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String school = (String)parent.getItemAtPosition(position);
+                //Todo: this scholl is probably important ma nikka
                 schoolName = school;
             }
         });
@@ -258,7 +258,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         btnYes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                s.edit().putString("role", (String) spRoles.getSelectedItem());
+                s.edit().putString("role", (String) spRoles.getSelectedItem()).commit();
                 if(!tvName.getText().toString().equals("")) {
                     tedBottomPicker.show(getSupportFragmentManager());
                 } else {
@@ -407,7 +407,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         try {
                             String yId = response.getString("year_id");
                             yearId = Integer.parseInt(yId);
-                            s.edit().putInt("yearId", yearId);
+                            s.edit().putInt("yearId", yearId).commit();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -439,7 +439,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         try {
                             String schoolIP = response.getString("school_ip");
                             sIp = Integer.parseInt(schoolIP);
-
+                            s.edit().putInt("sIp", sIp).commit();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -484,7 +484,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         schoolName = (String) parent.getItemAtPosition(position);
         selectedSchoolID = Integer.parseInt(stringSchools.get(position));
-        s.edit().putInt("school_id", selectedSchoolID);
+        s.edit().putInt("school_id", selectedSchoolID).commit();
+        getSchoolIP(token[0]);
+        getYearId(token);
     }
     private void getNameAndSurname(String[] token, final TextView tvName,final TextView etSurname, TextView etID) {
         Log.d(TAG, "run: in here man:" );
@@ -501,7 +503,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                             final String name = response.getString("name");
                             final String surname = response.getString("surname");
                             userId = Integer.parseInt(response.getString("user_id"));
-                            s.edit().putInt("userId", userId);
+                            s.edit().putInt("userId", userId).commit();
                             Log.d(TAG, "onResponse: resposnse name:" + name + "surane: " + surname);
                             MainActivity.this.runOnUiThread(new Runnable() {
                                 @Override

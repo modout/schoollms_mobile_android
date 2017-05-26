@@ -1,5 +1,6 @@
 package net.schoollms.schoollmsregistration;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -7,6 +8,8 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,8 +20,11 @@ import android.webkit.*;
 import android.widget.*;
 
 import java.io.*;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import services.WifiWatcherService;
 
 public class WebViewActivity extends AppCompatActivity implements PopupMenu.OnMenuItemClickListener {
     private static final String TAG = "WebViewActivity";
@@ -35,8 +41,10 @@ public class WebViewActivity extends AppCompatActivity implements PopupMenu.OnMe
 
 
     private String role;
-    private String yearId;
+    private int yearId;
+    private int sIp;
 
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,20 +58,36 @@ public class WebViewActivity extends AppCompatActivity implements PopupMenu.OnMe
         s = getSharedPreferences("school_pref", MODE_PRIVATE);
 
 
+
+
         Button btn = (Button) findViewById(R.id.button_menu);
         btn.setVisibility(View.GONE);
         String token = s.getString("token", "");
         role = s.getString("role", "");
-        String userId = s.getString("userId", "");
-        String selectedSchoolID = s.getString("school_id", "");
-     //   sIp = s.getString("sIp", "");
-        yearId = s.getString("yearId", "");
+        int userId = s.getInt("userId", 0);
+        int selectedSchoolID = s.getInt("school_id", 0) + 1;
+        sIp = s.getInt("sIp", 0);
+        yearId = s.getInt("yearId", 0);
 
         Log.d(TAG, "onCreate: in here: webview");
 
-        u = "localhost:2080";
+        //Always start the wifi watcherService NB
+        Intent wifiWatcherService = new Intent(this, WifiWatcherService.class);
+        startService(wifiWatcherService);
+
+
+        u = "localhost:2080"; //
         if (getConnectivityStatus(this) == TYPE_WIFI) {
-            u = u + "/vas/timetable";
+            // need to do more check here
+            WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            List<ScanResult> scanResults = wifiManager.getScanResults();
+            for (ScanResult c : scanResults) {
+                if(c.SSID.equals(pref.getString("school_wifi_ssid", ""))) {
+                    u = sIp + "/vas/timetable";
+                    break;
+                }
+                // else should connect to the local distribution of the LMS!
+            }
         } else if(getConnectivityStatus(this) == TYPE_MOBILE) {
             u = "timetable.schoollms.net";
         }
@@ -73,21 +97,10 @@ public class WebViewActivity extends AppCompatActivity implements PopupMenu.OnMe
            // showPopup(btn);
         }
 
-        final Timer t = new Timer();
-        t.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                if(execCmd()) {
-                    t.cancel();
-                    Log.d(TAG, "the command has been executed");
-                    Intent in = new Intent(getApplicationContext(), WebViewActivity.class);
-                    startActivity(in);
-                }
-            }
-        }, 60);
+
 //        String androidId = Settings.Secure.getString(this.getContentResolver(),
 //                Settings.Secure.ANDROID_ID);
-        ux = "http://"+ u +"/viewtimetable.php?school_id=" + getIntent().getStringExtra("schoolId")+ "&user_type="+role+"&user_id=" + getIntent().getStringExtra("userID") + "&year_id="+ getIntent().getStringExtra("yearId");
+        ux = "http://"+ u +"/viewtimetable.php?school_id=" + selectedSchoolID + "&user_type="+role+"&user_id=" + userId + "&year_id="+ yearId;
 
         final String url[] = {ux};
         String prefString = pref.getString("url", ux);
