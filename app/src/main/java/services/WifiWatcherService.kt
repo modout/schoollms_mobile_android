@@ -11,12 +11,9 @@ import java.util.*
 
 
 /**
- * An [IntentService] subclass for handling asynchronous task requests in
+ * This class checks for connectivity
  * a service on a separate handler thread.
  *
- *
- * TODO: Customize class - update intent actions, extra parameters and static
- * helper methods.
  */
 class WifiWatcherService : IntentService("WifiWatcherService") {
 
@@ -66,7 +63,7 @@ class WifiWatcherService : IntentService("WifiWatcherService") {
         fun getSharedPrefs(context: Context) = context.getSharedPreferences("school_pref", Context.MODE_PRIVATE)
     }
 
-
+// logic t connect to the wifi
     override fun onCreate() {
         super.onCreate()
         Timer().scheduleAtFixedRate(object : TimerTask() {

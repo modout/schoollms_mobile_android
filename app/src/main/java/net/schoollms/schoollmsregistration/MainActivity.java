@@ -1,6 +1,7 @@
 package net.schoollms.schoollmsregistration;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -50,44 +51,91 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private  int counter = 0;
     SharedPreferences s;
     final String[] token = {""};
+    private ArrayAdapter<String> adapter;
+    private ArrayAdapter<String> ad;
+    private Spinner spRoles;
+    private AutoCompleteTextView spSchoolName;
+    private EditText etID;
+    private TextView tvName;
+    private EditText etSurname;
+    private Button btnYes;
+    private Button btnNo;
+    private LinearLayout linearLayout;
+    private Button btnDone;
+    private ImageView imageView;
+    private Button btnSend;
+    private LinearLayout lnrOther;
 
+    String url;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        final Spinner spRoles = (Spinner) findViewById(R.id.spinner_roles);
-        final AutoCompleteTextView spSchoolName = (AutoCompleteTextView) findViewById(R.id.et_school_name);
-        final EditText etID = (EditText) findViewById(R.id.editText_ID);
-        final TextView tvName = (TextView) findViewById(R.id.editText_name);
-        final EditText etSurname = (EditText) findViewById(R.id.editText_surname);
-        Button btnYes = (Button) findViewById(R.id.btn_yes);
-        Button btnNo = (Button) findViewById(R.id.btn_no);
-        final LinearLayout linearLayout = (LinearLayout) findViewById(R.id.layout_confirm_details);
-        final Button btnDone = (Button) findViewById(R.id.btn_done);
-        final ArrayAdapter<String> ad = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item);
-        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
-        final ImageView imageView = (ImageView) findViewById(R.id.image_profile);
-        final Button btnSend = (Button) findViewById(R.id.btn_send);
-        final LinearLayout lnrOther = (LinearLayout) findViewById(R.id.lnrOtherInput);
+        spRoles = (Spinner) findViewById(R.id.spinner_roles);
+        spSchoolName = (AutoCompleteTextView) findViewById(R.id.et_school_name);
+        etID = (EditText) findViewById(R.id.editText_ID);
+        tvName = (TextView) findViewById(R.id.editText_name);
+        etSurname = (EditText) findViewById(R.id.editText_surname);
+        btnYes = (Button) findViewById(R.id.btn_yes);
+        btnNo = (Button) findViewById(R.id.btn_no);
+        linearLayout = (LinearLayout) findViewById(R.id.layout_confirm_details);
+        btnDone = (Button) findViewById(R.id.btn_done);
+        ad = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
+        imageView = (ImageView) findViewById(R.id.image_profile);
+
+        btnSend = (Button) findViewById(R.id.btn_send);
+        lnrOther = (LinearLayout) findViewById(R.id.lnrOtherInput);
+        final Button  btnInternet, btnNoInternet,btnIPSet;
+        final LinearLayout containerLayout = (LinearLayout) findViewById(R.id.theOne);
+        final EditText etIP = (EditText) findViewById(R.id.et_IP_input);
         s = getSharedPreferences("school_pref", MODE_PRIVATE);
 
+        btnInternet = (Button) findViewById(R.id.reg_internet);
+        btnNoInternet = (Button) findViewById(R.id.reg_no_internet);
+        btnIPSet = (Button) findViewById(R.id.btn_IP_set);
+        String url;
 
-
-
-
-
-
-
-
-        //INITIALIZINALL ALL THE STUFF
-
-
-        String[] roles = {"Learner", "Support", "Teacher"};
-        final String[] schools = {"School A", "School B", "School C"};
         ids = new String[]{"5678", "1234", "3456"};
 
-        AndroidNetworking.post("http://www.schoollms.net/services/session/token")
+        btnInternet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String url = "http://www.schoollms.net";
+                doNetworkCalls(url);
+                containerLayout.setVisibility(View.VISIBLE);
+                btnIPSet.setVisibility(View.GONE);
+              //  btnInternet.setVisibility(View.GONE);
+            }
+        });
+        btnNoInternet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {                //todo: please add the URL here dude
+                etIP.setVisibility(View.VISIBLE);
+
+             //   btnInternet.setVisibility(View.GONE);
+                btnIPSet.setVisibility(View.VISIBLE);
+            }
+        });
+        btnIPSet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(TextUtils.isEmpty(etIP.getText().toString()))
+                    etIP.setError("please input the IP before continuing ");
+                else {
+                    String url = etIP.getText().toString();
+                    btnIPSet.setVisibility(View.GONE);
+                    containerLayout.setVisibility(View.VISIBLE);
+                    doNetworkCalls(url);
+                }
+            }
+        });
+    }
+
+    private void doNetworkCalls(final String url) {
+
+        AndroidNetworking.post(url + "/services/session/token")
                 .setPriority(Priority.MEDIUM)
 //                .add
                 .build()
@@ -97,18 +145,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         Log.d(TAG, "onResponse: hello there " + response);
                         token[0] = response;
                         s.edit().putString("token", token[0]).commit();
-
+                        Log.d(TAG, "onResponse: Commit babe[token!!!]: " + token[0]);
                     }
 
                     @Override
                     public void onError(ANError anError) {
                         Log.d(TAG, "onResponse: hello there ERR " + anError.getResponse());
+                        Toast.makeText(MainActivity.this, "Internet Error, please check your connection", Toast.LENGTH_SHORT).show();
                     }
                 });
         final Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
-                AndroidNetworking.post("http://www.schoollms.net/drupalgap/school_lms_resources/user_details_service.json")
+                AndroidNetworking.post(url + "/drupalgap/school_lms_resources/user_details_service.json")
                         .setPriority(Priority.LOW)
                         .addHeaders("X-CSRF-Token", token[0].equals("") ? "oSJwTj-O1J99uiMvnvtNEQgV9uqoUjQJoct6WYytwbA" : token[0])
                         .addBodyParameter("message", "get:schools")
@@ -137,10 +186,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                                 Log.d(TAG, "onError: error" + anError.toString());
                             }
                         });
+
             }
         });
         t.start();
-        AndroidNetworking.post("http://www.schoollms.net/drupalgap/school_lms_resources/user_details_service.json")
+        AndroidNetworking.post(url + "/drupalgap/school_lms_resources/user_details_service.json")
                 .setPriority(Priority.LOW)
                 .addHeaders("X-CSRF-Token", token[0].equals("") ? "oSJwTj-O1J99uiMvnvtNEQgV9uqoUjQJoct6WYytwbA" : token[0])
                 .addBodyParameter("message", "get:roles")
@@ -150,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     public void onResponse(JSONObject response) {
                         for (int i = 0; i < response.length(); i++) {
                             try {
-                                String string = response.getString(i + "");
+                                String string = response.getString(i + ""); // 1: 'Teacher', 2: Le
                                 string = string.toUpperCase();
                                 ad.add(string);
                                 ad.notifyDataSetChanged();
@@ -167,7 +217,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         Log.d(TAG, "onError: error" + anError.toString());
                     }
                 });
-
 
         Log.d(TAG, "onCreate: size of array" + stringArrayList.size());
 
@@ -217,12 +266,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onClick(View v) {
                 if (schoolName == null || TextUtils.isEmpty(schoolName)) {
-                     spSchoolName.setError("Please enter a school to continue");
+                    spSchoolName.setError("Please enter a school to continue");
                 } else if (TextUtils.isEmpty(etID.getText().toString())) {
                     etID.setError("Please enter your ID to continue");
                 } else {
-                   // t2.start();
-                    getNameAndSurname(token, tvName, etSurname, etID);
+                    // t2.start();
+                    getNameAndSurname(url, token, tvName, etSurname, etID);
                     Toast.makeText(MainActivity.this, "Scroll down now to validate you infomation", Toast.LENGTH_LONG).show();
                     btnDone.setVisibility(View.GONE);
                     linearLayout.setVisibility(View.VISIBLE);
@@ -259,13 +308,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onClick(View v) {
                 s.edit().putString("role", (String) spRoles.getSelectedItem()).commit();
+                Log.d(TAG, "onResponse: selected role Commit babe[role]: " + spRoles.getSelectedItem());
                 if(!tvName.getText().toString().equals("")) {
                     tedBottomPicker.show(getSupportFragmentManager());
                 } else {
                     Toast.makeText(MainActivity.this, "Recheck your Form and press Submit again or press not me this incidence will be reported", Toast.LENGTH_LONG).show();
                     linearLayout.setVisibility(View.GONE);
                     btnDone.setVisibility(View.VISIBLE);
-                   // uploadThePicture();
+                    // uploadThePicture();
                 }
 
             }
@@ -290,14 +340,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 try {
                     Log.d(TAG, "onClick: seding img");
                     toast = Toast.makeText(MainActivity.this, "Uploading", Toast.LENGTH_LONG);
-                    uploadThePicture(mUri, token, etID);
+                    uploadThePicture(url, mUri, token, etID);
                     Intent intent = new Intent(MainActivity.this, FileSizeWatcherService.class);
                     startService(intent);
                     if(spRoles.getSelectedItem().equals("Learner")) {
                         learnerTimer.schedule(new TimerTask() {
                             @Override
                             public void run() {
-                                checkTheUserHasRegistered(token);
+                                checkTheUserHasRegistered(url, token);
                             }
                         }, 1000 );
                     } else {
@@ -308,6 +358,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
             }
         });
+
     }
 
     private TedBottomPicker getTedBottomPicker(final ImageView imageView) {
@@ -323,13 +374,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     .create();
     }
 
-
-
-
-
-
-    private void checkTheUserHasRegistered(String[] token) {
-        AndroidNetworking.post("http://www.schoollms.net/drupalgap/school_lms_resources/user_details_service.json")
+    private void checkTheUserHasRegistered(String url, String[] token) {
+        AndroidNetworking.post(url + "/drupalgap/school_lms_resources/user_details_service.json")
                 .setPriority(Priority.HIGH)
                 .addHeaders("X-CSRF-Token", token[0].equals("") ? "oSJwTj-O1J99uiMvnvtNEQgV9uqoUjQJoct6WYytwbA" : token[0])
                 .addBodyParameter("message", "get:photo_confirm:" + userId)
@@ -365,7 +411,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
 
 
-    private void uploadThePicture(Uri uri, String[] token, TextView etID) throws IOException {
+    private void uploadThePicture(String url, Uri uri, String[] token, TextView etID) throws IOException {
         File file = new File(uri.getPath());
         FileInputStream fileInputStream = new FileInputStream(file);
         byte[] bytes = new byte[(int) file.length()];
@@ -373,7 +419,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         toast.show(); // show that its uploading
         String encodedFile = Base64.encodeToString(bytes, Base64.DEFAULT);
         Log.d(TAG, "uploadThePicture: the encoding" + encodedFile);
-        AndroidNetworking.post("http://www.schoollms.net/drupalgap/school_lms_resources/user_details_service.json")
+        AndroidNetworking.post(url + "/drupalgap/school_lms_resources/user_details_service.json")
                 .setPriority(Priority.HIGH)
                 .addHeaders("X-CSRF-Token", token[0].equals("") ? "oSJwTj-O1J99uiMvnvtNEQgV9uqoUjQJoct6WYytwbA" : token[0])
                 .addBodyParameter("message", "send:photo:" + userId + ":" + encodedFile)
@@ -395,8 +441,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
 
-    private void getYearId(String[] token) {
-        AndroidNetworking.post("http://www.schoollms.net/drupalgap/school_lms_resources/user_details_service.json")
+    private void getYearId(String url, String[] token) {
+        AndroidNetworking.post(url + "/drupalgap/school_lms_resources/user_details_service.json")
                 .setPriority(Priority.HIGH)
                 .addHeaders("X-CSRF-Token", token[0].equals("") ? "oSJwTj-O1J99uiMvnvtNEQgV9uqoUjQJoct6WYytwbA" : token[0])
                 .addBodyParameter("message", "get:year_id:" + getYear())
@@ -408,6 +454,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                             String yId = response.getString("year_id");
                             yearId = Integer.parseInt(yId);
                             s.edit().putInt("yearId", yearId).commit();
+                            Log.d(TAG, "onResponse: Commit [year ID:]" + yearId);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -421,14 +468,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 });
     }
 
+    @SuppressLint("WrongConstant")
     public int getYear() {
         Calendar now = Calendar.getInstance();   // Gets the current date and time
         return now.get(Calendar.YEAR);
 
     }
 
-    private void getSchoolIP(String token) {
-        AndroidNetworking.post("http://www.schoollms.net/drupalgap/school_lms_resources/user_details_service.json")
+    private void getSchoolIP(String url, String token) {
+        AndroidNetworking.post(url + "/drupalgap/school_lms_resources/user_details_service.json")
                 .setPriority(Priority.HIGH)
                 .addHeaders("X-CSRF-Token", token.equals("") ? "oSJwTj-O1J99uiMvnvtNEQgV9uqoUjQJoct6WYytwbA" : token)
                 .addBodyParameter("message", "get:school_ip:"+ selectedSchoolID )
@@ -440,6 +488,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                             String schoolIP = response.getString("school_ip");
                             sIp = Integer.parseInt(schoolIP);
                             s.edit().putInt("sIp", sIp).commit();
+                            Log.d(TAG, "onResponse: COMMIT MAN: " + sIp);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -485,12 +534,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         schoolName = (String) parent.getItemAtPosition(position);
         selectedSchoolID = Integer.parseInt(stringSchools.get(position));
         s.edit().putInt("school_id", selectedSchoolID).commit();
-        getSchoolIP(token[0]);
-        getYearId(token);
+        Log.d(TAG, "onItemClick: hello thete : " + selectedSchoolID);
+        getSchoolIP(url, token[0]);
+        getYearId(url, token);
     }
-    private void getNameAndSurname(String[] token, final TextView tvName,final TextView etSurname, TextView etID) {
+    private void getNameAndSurname(String url, String[] token, final TextView tvName,final TextView etSurname, TextView etID) {
         Log.d(TAG, "run: in here man:" );
-        AndroidNetworking.post("http://www.schoollms.net/drupalgap/school_lms_resources/user_details_service.json")
+        AndroidNetworking.post(url + "/drupalgap/school_lms_resources/user_details_service.json")
                 .setPriority(Priority.HIGH)
                 .addHeaders("X-CSRF-Token", token[0].equals("") ? "oSJwTj-O1J99uiMvnvtNEQgV9uqoUjQJoct6WYytwbA" : token[0])
                 .addBodyParameter("message", "get:details:" + etID.getText().toString() + ":schoollms_schema_userdata_access_profile")
@@ -505,6 +555,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                             userId = Integer.parseInt(response.getString("user_id"));
                             s.edit().putInt("userId", userId).commit();
                             Log.d(TAG, "onResponse: resposnse name:" + name + "surane: " + surname);
+                            Log.d(TAG, "onResponse: userID: " + userId);
                             MainActivity.this.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -518,7 +569,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                             e.printStackTrace();
                         }
                     }
-
                     @Override
                     public void onError(ANError anError) {
                         Log.d(TAG, "onError: erros is here man: " + anError.toString());

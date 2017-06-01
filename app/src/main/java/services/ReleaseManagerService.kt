@@ -32,17 +32,17 @@ class ReleaseManagerService : IntentService("ReleaseManagerService") {
         super.onCreate()
         Timer().scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
-                AndroidNetworking.post("http://www.schoollms.net/drupalgap/school_lms_resources/user_details_service.json")
+                AndroidNetworking.post("http://www.schoollms.net/drupalgap/school_lms_resources/user_details_service.json") //TODO: replace with URL
                         .setPriority(Priority.LOW)
                         .addHeaders("X-CSRF-Token", "oSJwTj-O1J99uiMvnvtNEQgV9uqoUjQJoct6WYytwbA")
-                        .addBodyParameter("message", "get:roles")
+                        .addBodyParameter("message", "get:roles") // TODO: replace as well
                         .build()
                         .getAsJSONObject(object : JSONObjectRequestListener {
                             override fun onResponse(response: JSONObject) {
                                 // write code that will do the networking
                                 val sdcardAndroidDir = File(Environment.getExternalStorageDirectory().absoluteFile.absolutePath)
                               //  val f = File(sdcardAndroidDir.getAbsolutePath() + "/GNURoot/home")
-                                val inputStream: FileInputStream? = FileInputStream("") // should come from network
+                                val inputStream: FileInputStream? = FileInputStream("") // should come from network TODO: replace as well
                                 val fileOutputStream: FileOutputStream? = FileOutputStream(sdcardAndroidDir.getAbsolutePath() + "/GNURoot/home/install_core_new.sh")
                                 if(fileOutputStream != null && inputStream != null) {
                                     val buffer: ByteArray = ByteArray(1024)

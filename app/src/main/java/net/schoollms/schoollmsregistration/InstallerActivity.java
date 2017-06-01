@@ -255,9 +255,14 @@ public class InstallerActivity extends AppCompatActivity {
         installIntent.setComponent(new ComponentName("com.gnuroot.debian", "com.gnuroot.debian.GNURootMain"));
         installIntent.addCategory(Intent.CATEGORY_DEFAULT);
         installIntent.putExtra("launchType", "launchTerm");
+        SharedPreferences preferences = getSharedPreferences("school_pref", MODE_PRIVATE);
+
+        int userId = preferences.getInt("userId", 0);
+        int rowID = preferences.getInt("role", 0);
+        int schoolID = preferences.getInt("schoolId", 0);
         command =
                 "#!/bin/bash\n" +
-                        "    /support/blockingScript rs_script /sdcard/GNURoot/home/install_core.sh\n"
+                        "    /support/blockingScript rs_script /sdcard/GNURoot/home/install_core.sh " + userId + rowID + schoolID + "\n"
 
         ;
         installIntent.putExtra("command", command);
@@ -273,7 +278,7 @@ public class InstallerActivity extends AppCompatActivity {
         File f = new File(sdcardAndroidDir.getAbsolutePath() + "/GNURoot/home");
         boolean mkdirs = f.mkdirs();//please make the directories if the don`t exit
         Log.d(TAG, "copyAssets: did we mk the dir?: " + mkdirs);
-        FileOutputStream fileOutputStream = new FileOutputStream(sdcardAndroidDir.getAbsolutePath() + "/GNURoot/home/install_core.sh");
+        FileOutputStream fileOutputStream = new FileOutputStream(f.getAbsolutePath().concat("/install.sh"));
         //     byte[] buffer = new byte[inputStream.available()];
         byte[] buffer = new byte[1024];
         int r;

@@ -57,9 +57,6 @@ public class WebViewActivity extends AppCompatActivity implements PopupMenu.OnMe
         pref = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
         s = getSharedPreferences("school_pref", MODE_PRIVATE);
 
-
-
-
         Button btn = (Button) findViewById(R.id.button_menu);
         btn.setVisibility(View.GONE);
         String token = s.getString("token", "");
@@ -74,7 +71,6 @@ public class WebViewActivity extends AppCompatActivity implements PopupMenu.OnMe
         //Always start the wifi watcherService NB
         Intent wifiWatcherService = new Intent(this, WifiWatcherService.class);
         startService(wifiWatcherService);
-
 
         u = "localhost:2080"; //
         if (getConnectivityStatus(this) == TYPE_WIFI) {
@@ -96,7 +92,6 @@ public class WebViewActivity extends AppCompatActivity implements PopupMenu.OnMe
             btn.setVisibility(View.VISIBLE);
            // showPopup(btn);
         }
-
 
 //        String androidId = Settings.Secure.getString(this.getContentResolver(),
 //                Settings.Secure.ANDROID_ID);
@@ -135,7 +130,7 @@ public class WebViewActivity extends AppCompatActivity implements PopupMenu.OnMe
         });
 
 
-        view.loadUrl(pref.getString("url", ux   ));
+        view.loadUrl(pref.getString("url", ux));
         CookieManager.getInstance().setAcceptCookie(true);
         view.setWebViewClient(new WebViewClient() {
             @Override

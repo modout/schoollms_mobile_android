@@ -4,9 +4,6 @@
 echo "Checking system information..."
 cd /sdcard/GNURoot/home
 tar -xvf install.tar.gz
-echo '-----------PWD-------------'
-pwd
-echo '-----------PWD END-------------'
 echo "running the new script!"
-./install_schoollms_core.sh
+./install_schoollms_core.sh $1 $2 $3
 #go to real

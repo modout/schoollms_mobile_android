@@ -30,7 +30,49 @@
                 android:textSize="20dp"
         />
 
-        <TextView
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:id="@+id/regButtonsLayout"
+            android:orientation="vertical"
+            android:layout_marginBottom="10dp"
+            android:layout_height="wrap_content">
+            <Button
+                android:layout_width="match_parent"
+                android:text="Register Through Internet"
+                android:id="@+id/reg_internet"
+                android:layout_height="wrap_content" />
+            <Button
+                android:layout_width="match_parent"
+                android:id="@+id/reg_no_internet"
+                android:text="Register Without internet"
+                android:layout_height="wrap_content" />
+
+            <EditText
+                android:layout_width="match_parent"
+                android:visibility="gone"
+                android:id="@+id/et_IP_input"
+                android:hint="Please enter your school IP address"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:layout_width="match_parent"
+                android:id="@+id/btn_IP_set"
+                android:visibility="gone"
+                android:text="Done"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:id="@+id/theOne"
+            android:visibility="gone"
+            android:layout_height="wrap_content">
+
+            <TextView
                 android:text="Select Role"
                 android:layout_width="wrap_content"
                 android:textStyle="bold"
@@ -41,11 +83,12 @@
                 android:id="@+id/txt_select_role"/>
 
 
-        <Spinner android:layout_width="match_parent"
-                 android:id="@+id/spinner_roles"
-                 android:layout_gravity="center"
-                 android:layout_height="match_parent" />
+            <Spinner android:layout_width="match_parent"
+                android:id="@+id/spinner_roles"
+                android:layout_gravity="center"
+                android:layout_height="match_parent" />
 
+        </LinearLayout>
 
         <LinearLayout android:layout_width="match_parent"
                       android:orientation="vertical"

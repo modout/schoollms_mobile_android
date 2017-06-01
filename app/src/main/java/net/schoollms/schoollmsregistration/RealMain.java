@@ -43,28 +43,4 @@ public class RealMain extends AppCompatActivity {
 
     }
 
-
-
-
-
-
-
-
-//    private void restIt() {
-//        ApiEndPoint client = ApiClient.getClient().create(ApiEndPoint.class);
-//        final Call<Roles> roles = client.getRoles("get:roles");
-//        roles.enqueue(new Callback<Roles>() {
-//            @Override
-//            public void onResponse(Call<Roles> call, Response<Roles> response) {
-//               mRoles.add(response.body());
-//            }
-//
-//            @Override
-//            public void onFailure(Call<Roles> call, Throwable t) {
-//
-//            }
-//        });
-//
-//        }
-
 }
