@@ -107,15 +107,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 containerLayout.setVisibility(View.VISIBLE);
                 btnIPSet.setVisibility(View.GONE);
               //  btnInternet.setVisibility(View.GONE);
+                btnNoInternet.setVisibility(View.GONE);
             }
         });
         btnNoInternet.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {                //todo: please add the URL here dude
                 etIP.setVisibility(View.VISIBLE);
-
              //   btnInternet.setVisibility(View.GONE);
                 btnIPSet.setVisibility(View.VISIBLE);
+                btnInternet.setVisibility(View.GONE);
             }
         });
         btnIPSet.setOnClickListener(new View.OnClickListener() {

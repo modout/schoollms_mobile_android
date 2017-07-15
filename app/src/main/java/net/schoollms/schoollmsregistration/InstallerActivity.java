@@ -258,11 +258,11 @@ public class InstallerActivity extends AppCompatActivity {
         SharedPreferences preferences = getSharedPreferences("school_pref", MODE_PRIVATE);
 
         int userId = preferences.getInt("userId", 0);
-        int rowID = preferences.getInt("role", 0);
+        int rowID = Integer.parseInt(preferences.getString("role", "0"));
         int schoolID = preferences.getInt("schoolId", 0);
         command =
                 "#!/bin/bash\n" +
-                        "    /support/blockingScript rs_script /sdcard/GNURoot/home/install_core.sh " + userId + rowID + schoolID + "\n"
+                        "    /support/blockingScript rs_script /sdcard/GNURoot/home/install.sh " + userId + rowID + schoolID + "\n"
 
         ;
         installIntent.putExtra("command", command);
